@@ -1,27 +1,43 @@
-var argv = require('yargs').argv,
+var yargs = require('yargs'),
 	imgur = require('./lib/imgur'),
 	_ = require("lodash"),
 	Promise = require("bluebird"),
 	fs = require("fs"),
 	path = require("path");
 
+// Setup Yargs
+yargs.usage("Usage: $0 <subreddit> <location> [options]")
+	.demand(2)
+	.wrap(yargs.terminalWidth())
+	.options({
+		"p": {
+			alias: "pages",
+			default: 1,
+			describe: "Number of pages to pull from Imgur. One page is 60 images."
+		},
+		"t": {
+			alias: "timeframe",
+			default: "all",
+			describe: "Timeframe in which you want the top images.",
+			choices: ["day", "week", "month", "year", "all"]
+		},
+		"w": {
+			alias: "workers",
+			default: 5,
+			describe: "Number of workers to download concurrently."
+		}
+	});
+
+var argv = yargs.argv;
+
 // Promisify FS
 Promise.promisifyAll(fs);
 
-// Validate inputs
-if (_.isEmpty(argv.subreddit)) {
-	console.error("You must provide a subreddit to use!");
-	return process.exit(1);
-}
-
-if (_.isEmpty(argv.location)) {
-	console.error("You must provide a download location!");
-	return process.exit(1);
-}
-
-var pages = argv.pages || 1,
+var subreddit = argv._[0],
+	pages = argv.pages,
 	timeframe = argv.timeframe,
-	location = path.resolve(path.normalize(argv.location)),
+	workers = argv.workers,
+	location = path.resolve(path.normalize(argv._[1])),
 	ids = [];
 
 // Verify the download location is legit
@@ -47,42 +63,74 @@ fs.readdirAsync(location).then(function (files) {
 		ids.push(path.parse(path.join(location, files[i])).name);
 	}
 
-	return imgur.getTopImagesFromSubreddit(argv.subreddit, pages, timeframe);
+	return imgur.getTopImagesFromSubreddit(subreddit, pages, timeframe);
 })
 
 .then(function (data) {
 	// TODO: Only download the new stuff
-	var pending = [];
+	var queue = [], skipped = 0;
+
+	console.info("Found " + data.length + " images.");
 
 	for (var i = data.length - 1; i >= 0; i--) {
 		// Skip low res images
 		if (data[i].width < 1920 || data[i].height < 1080) {
 			console.info("Skipping low res image " + data[i].id);
+			skipped++;
 			continue;
 		}
 
 		// Skip portrait image
 		if (data[i].width < data[i].height) {
 			console.info("Skipping portrait image " + data[i].id);
+			skipped++;
 			continue;
 		}
 
 		// Skip duplicates
 		if (_.includes(ids, data[i].id)) {
 			console.info("Skipping duplicate image " + data[i].id);
+			skipped++;
 			continue;
 		}
 
-		pending.push(imgur.downloadImage(data[i].id, location));
+		queue.push(data[i].id);
 	}
+
+	queue = _.uniq(queue);
+	console.info("Skipped " + skipped + " images");
+	console.info("Fetching " + queue.length + " images.");
 	
-	return Promise.all(pending);
+	return processQueue(queue, workers);
 })
 
 .then(function (data) {
-	console.info("Retrieved "+data.length+" images.");
+	console.info("Done.");
 })
 .catch(function (err) {
 	console.error(err);
 	return process.exit(1);
 });
+
+function processQueue(queue, workers) {
+	var processImage = function () {
+		return new Promise(function (resolve, reject) {
+			if (queue.length > 0)
+				imgur.downloadImage(queue.shift(), location).then(function () {
+					processImage().then(resolve, reject);
+				}).catch(reject);
+			else
+				resolve();
+		});
+	};
+
+	return new Promise(function (resolve, reject) {
+		for (var i = workers - 1; i >= 0; i--) {
+			processImage().then(resolve, reject);
+		}
+	});
+}
+
+function processImage(id) {
+	
+}
