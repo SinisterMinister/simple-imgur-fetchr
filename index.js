@@ -130,7 +130,3 @@ function processQueue(queue, workers) {
 		}
 	});
 }
-
-function processImage(id) {
-	
-}
