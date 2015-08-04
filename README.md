@@ -16,9 +16,11 @@ $ npm install -g simple-imgur-fetchr
 Usage: simple-imgur-fetchr <subreddit> <location> [options]
 
 Options:
-  -p, --pages      Number of pages to pull from Imgur. One page is 60 images.   [default: 1]
-  -t, --timeframe  Timeframe in which you want the top images.              [default: "all"]
-  -w, --workers    Number of workers to download concurrently.                  [default: 5]
+  -p, --pages       Number of pages to pull from Imgur. One page is 60 images.     [default: 1]
+  -t, --timeframe   Timeframe in which you want the top images.                [default: "all"]
+  -w, --workers     Number of workers to download concurrently.                    [default: 5]
+  --allowPortraits  Download portrait images                         [boolean] [default: false]
+  --allowLowRes     Download images that are smaller than 1920x1080  [boolean] [default: false]
 ```
 
 By default, the script will download the top 60 images of all time for a subreddit.
