@@ -1,9 +1,11 @@
+#! /usr/bin/env node
+
 var yargs = require('yargs'),
 	path = require("path"),
 	core = require("./lib/core");
 
 // Setup Yargs
-var argv = yargs.usage("Usage: node $0 <subreddit> <location> [options]")
+var argv = yargs.usage("Usage: simple-imgur-fetchr <subreddit> <location> [options]")
 	.demand(2)
 	.wrap(yargs.terminalWidth())
 	.options({
