@@ -1,6 +1,6 @@
 {
   "name": "simple-imgur-fetchr",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Simple script to fetch images from subreddits on imgur",
   "main": "index.js",
   "scripts": {
