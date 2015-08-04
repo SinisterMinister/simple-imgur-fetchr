@@ -3,7 +3,7 @@ var yargs = require('yargs'),
 	core = require("./lib/core");
 
 // Setup Yargs
-var argv = yargs.usage("Usage: $0 <subreddit> <location> [options]")
+var argv = yargs.usage("Usage: node $0 <subreddit> <location> [options]")
 	.demand(2)
 	.wrap(yargs.terminalWidth())
 	.options({
@@ -25,6 +25,7 @@ var argv = yargs.usage("Usage: $0 <subreddit> <location> [options]")
 		}
 	}).argv;
 
+// Extract and normalize arguments
 var subreddit = argv._[0],
 	pages = argv.pages,
 	timeframe = argv.timeframe,
@@ -32,6 +33,7 @@ var subreddit = argv._[0],
 	location = path.resolve(path.normalize(argv._[1])),
 	ids = [];
 
+// Do the work
 core.fetchImages(subreddit, location, pages, timeframe, workers).then(function () {
 	console.info("Download complete!");
 	process.exit();
