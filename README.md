@@ -1,4 +1,4 @@
-# Simple Imgur Fetchr
+# Simple Imgur Fetchr [![npm version](https://badge.fury.io/js/simple-imgur-fetchr.svg)](http://badge.fury.io/js/simple-imgur-fetchr)
 
 Simple Imgur Fetchr is a node script that will download the top images for a subreddit from Imgur to a location of your choosing. You can tune the parallelism of the downloads as well as how many pages you wish to fetch.
 
