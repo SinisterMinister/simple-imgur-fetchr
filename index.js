@@ -24,6 +24,16 @@ var argv = yargs.usage("Usage: simple-imgur-fetchr <subreddit> <location> [optio
 			alias: "workers",
 			default: 5,
 			describe: "Number of workers to download concurrently."
+		},
+		"allowPortraits": {
+			default: false,
+			boolean: true,
+			describe: "Download portrait images"
+		},
+		"allowLowRes": {
+			default: false,
+			boolean: true,
+			describe: "Download images that are smaller than 1920x1080"
 		}
 	}).argv;
 
@@ -33,10 +43,12 @@ var subreddit = argv._[0],
 	timeframe = argv.timeframe,
 	workers = argv.workers,
 	location = path.resolve(path.normalize(argv._[1])),
+	portraits = argv.allowPortraits,
+	lowRes = argv.allowLowRes,
 	ids = [];
 
 // Do the work
-core.fetchImages(subreddit, location, pages, timeframe, workers).then(function () {
+core.fetchImages(subreddit, location, pages, timeframe, workers, portraits, lowRes).then(function () {
 	console.info("Download complete!");
 	process.exit();
 }).catch(function (err) {
